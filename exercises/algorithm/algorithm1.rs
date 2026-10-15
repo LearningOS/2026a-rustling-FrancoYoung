@@ -72,10 +72,14 @@ impl<T> LinkedList<T> {
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
 		//TODO
+        while list_b.start.is_some(){
+            list_a.add(list_b.start.val);
+            list_b.start=list_b.start.next;
+        }
 		Self {
-            length: 0,
-            start: None,
-            end: None,
+            length: list_a.length,
+            start: list_a.start,
+            end: list_b.end,
         }
 	}
 }
