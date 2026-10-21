@@ -2,10 +2,12 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
+
 
 use std::cmp::Ord;
 use std::default::Default;
+use std::mem::replace;
+use std::mem::swap;
 
 pub struct Heap<T>
 where
@@ -38,6 +40,17 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.items.push(value);
+        self.count+=1;
+        let mut idx = self.count;
+        while idx > 1{
+            if (self.comparator)(&self.items[idx],&self.items[self.parent_idx(idx)]){
+                let p = self.parent_idx(idx);
+                self.items.swap(idx,p);
+                idx = self.parent_idx(idx);
+            }
+            else {break;}
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,7 +71,18 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+		if self.children_present(idx){
+            if self.right_child_idx(idx)<=self.count{
+                if (self.comparator)(&self.items[self.left_child_idx(idx)],&self.items[self.right_child_idx(idx)]){
+                    return self.left_child_idx(idx);
+                }
+                else {
+                    return self.right_child_idx(idx);
+                }
+            }
+            return self.left_child_idx(idx);
+        }
+        else {0}
     }
 }
 
@@ -85,7 +109,27 @@ where
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+		if self.count==0{
+            return None;
+        }
+        let root = self.items.swap_remove(1);
+        self.count -= 1;
+
+        let mut idx = 1;
+        while self.children_present(idx){
+            let child = self.smallest_child_idx(idx);
+            if child == 0{
+                break;
+            }
+            if (self.comparator)(&self.items[child],&self.items[idx]){
+                self.items.swap(child,idx);
+                idx = child;
+            }
+            else {
+                break;
+            }
+        }
+        Some(root)
     }
 }
 

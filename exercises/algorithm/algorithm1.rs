@@ -2,11 +2,8 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
-
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-use std::vec::*;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -69,19 +66,54 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-        while list_b.start.is_some(){
-            list_a.add(list_b.start.val);
-            list_b.start=list_b.start.next;
+    pub fn merge(list_a: LinkedList<T>, list_b: LinkedList<T>) -> Self
+    where
+        // 合并时需要比较节点的值；Ord 表示 T 支持全序比较。
+        // 约束只加在 merge 上，创建链表、追加元素不要求 T 实现 Ord。
+        T: Ord,
+    {
+        let mut result = Self::new();
+        result.length = list_a.length + list_b.length;
+
+        let mut a = list_a.start;
+        let mut b = list_b.start;
+
+        while let (Some(node_a), Some(node_b)) = (a, b) {
+            let mut selected = unsafe {
+                if node_a.as_ref().val <= node_b.as_ref().val {
+                    a = node_a.as_ref().next;
+                    node_a
+                } else {
+                    b = node_b.as_ref().next;
+                    node_b
+                }
+            };
+            unsafe {
+                selected.as_mut().next = None;
+
+                match result.end {
+                    Some(mut tail) => tail.as_mut().next = Some(selected),
+                    None => result.start = Some(selected),
+                }
+            }
+            result.end = Some(selected);
         }
-		Self {
-            length: list_a.length,
-            start: list_a.start,
-            end: list_b.end,
+        let (remaining, remaining_end) = if a.is_some() {
+            (a, list_a.end)
+        } else {
+            (b, list_b.end)
+        };
+
+        if remaining.is_some() {
+            match result.end {
+                Some(mut tail) => unsafe { tail.as_mut().next = remaining },
+                None => result.start = remaining,
+            }
+            result.end = remaining_end;
         }
-	}
+        
+        result
+    }
 }
 
 impl<T> Display for LinkedList<T>
